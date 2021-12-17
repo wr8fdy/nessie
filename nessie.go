@@ -88,26 +88,39 @@ type nessusImpl struct {
 	// authCookie is the login token returned by nessus upon successful login.
 	authCookie string
 	apiURL     string
+
+	//accessKey/secretKey replace authCookie for login authorization
+	// Useful for certain versions of v6 upgraded to v10 that complain about
+	// 'API Unavailable'
+	accessKey string
+	secretKey string
+
 	// verbose will log requests and responses amongst other helpful debugging things.
 	verbose bool
 }
 
 // NewNessus will return a new Nessus instance, if caCertPath is empty, the host certificate roots will be used to check for the validity of the nessus server API certificate.
 func NewNessus(apiURL, caCertPath string) (Nessus, error) {
-	return newNessus(apiURL, caCertPath, false, false, nil)
+	return newNessus(apiURL, caCertPath, "", "", false, false, nil)
 }
 
 // NewInsecureNessus will return a nessus instance which does not check for the api certificate validity, do not use in production environment.
 func NewInsecureNessus(apiURL string) (Nessus, error) {
-	return newNessus(apiURL, "", true, false, nil)
+	return newNessus(apiURL, "", "", "", true, false, nil)
+}
+
+// NewInsecureNessusWithAPIKey will return a nessus instance which does not check for the api certificate validity, and also injects an API token header.
+// This replaces the standard 'Cookie' login mechanism.
+func NewInsecureNessusWithAPIKey(apiURL, accessKey, secretKey string) (Nessus, error) {
+	return newNessus(apiURL, "", accessKey, secretKey, true, false, nil)
 }
 
 // NewFingerprintedNessus will return a nessus instance which verifies the api server's certificate by its SHA256 fingerprint (on the RawSubjectPublicKeyInfo and base64 encoded) against a whitelist of good certFingerprints. Fingerprint verification will enable InsecureSkipVerify.
 func NewFingerprintedNessus(apiURL string, certFingerprints []string) (Nessus, error) {
-	return newNessus(apiURL, "", true, true, certFingerprints)
+	return newNessus(apiURL, "", "", "", true, true, certFingerprints)
 }
 
-func newNessus(apiURL, caCertPath string, ignoreSSLCertsErrors bool, verifyCertFingerprint bool, certFingerprints []string) (Nessus, error) {
+func newNessus(apiURL, caCertPath, accessKey, secretKey string, ignoreSSLCertsErrors bool, verifyCertFingerprint bool, certFingerprints []string) (Nessus, error) {
 	var (
 		dialTLS func(network, addr string) (net.Conn, error)
 		roots   *x509.CertPool
@@ -133,7 +146,9 @@ func newNessus(apiURL, caCertPath string, ignoreSSLCertsErrors bool, verifyCertF
 		dialTLS = createDialTLSFuncToVerifyFingerprint(certFingerprints, config)
 	}
 	return &nessusImpl{
-		apiURL: apiURL,
+		apiURL:    apiURL,
+		accessKey: accessKey,
+		secretKey: secretKey,
 		client: &http.Client{
 			Transport: &http.Transport{
 				TLSClientConfig: config,
@@ -206,8 +221,12 @@ func (n *nessusImpl) Request(method string, resource string, js interface{}, wan
 	}
 	req.Header.Add("Content-Type", "application/json")
 	req.Header.Add("Accept", "application/json")
-	if n.authCookie != "" {
-		req.Header.Add("X-Cookie", fmt.Sprintf("token=%s", n.authCookie))
+	if n.accessKey != "" && n.secretKey != "" {
+		req.Header.Add("X-ApiKeys", fmt.Sprintf("accessKey=%s; secretKey=%s", n.accessKey, n.secretKey))
+	} else {
+		if n.authCookie != "" {
+			req.Header.Add("X-Cookie", fmt.Sprintf("token=%s", n.authCookie))
+		}
 	}
 
 	if n.verbose {
