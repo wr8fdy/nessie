@@ -1,5 +1,5 @@
-[![Build Status](https://travis-ci.org/attwad/nessie.svg?branch=master)](https://travis-ci.org/attwad/nessie)
-[![GoDoc](https://godoc.org/github.com/attwad/nessie?status.png)](https://godoc.org/github.com/attwad/nessie)
+[![Build Status](https://travis-ci.org/JerusJ/nessie.svg?branch=master)](https://travis-ci.org/JerusJ/nessie)
+[![GoDoc](https://godoc.org/github.com/JerusJ/nessie?status.png)](https://godoc.org/github.com/JerusJ/nessie)
 
 Nessie
 ======
@@ -9,7 +9,7 @@ Tenable Nessus 6 API client in Go.
 Usage
 -----
 
-Have a look at [the client example](https://github.com/attwad/nessie/blob/master/cli/nessie.go) for how to start a scan, wait until it finishes and exports the results to a CSV file.
+Have a look at [the client example](https://github.com/JerusJ/nessie/blob/master/cli/nessie.go) for how to start a scan, wait until it finishes and exports the results to a CSV file.
 
 Status
 ------

@@ -3,7 +3,7 @@ package main
 
 import (
 	"flag"
-	"github.com/attwad/nessie"
+	"github.com/JerusJ/nessie"
 	"io/ioutil"
 	"log"
 	"strings"
