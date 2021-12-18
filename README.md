@@ -1,4 +1,3 @@
-[![Build Status](https://travis-ci.org/JerusJ/nessie.svg?branch=master)](https://travis-ci.org/JerusJ/nessie)
 [![GoDoc](https://godoc.org/github.com/JerusJ/nessie?status.png)](https://godoc.org/github.com/JerusJ/nessie)
 
 Nessie

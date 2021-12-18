@@ -40,6 +40,7 @@ func main() {
 	defer nessus.Logout()
 
 	var scanID int64 = 13
+	var templateID int64 = 1
 	// We only care about the last scan, so no use for the scan UUID here.
 	if _, err = nessus.StartScan(scanID); err != nil {
 		panic(err)
@@ -57,7 +58,7 @@ func main() {
 		time.Sleep(5 * time.Second)
 	}
 
-	exportID, err := nessus.ExportScan(scanID, nessie.ExportCSV)
+	exportID, err := nessus.ExportScan(scanID, templateID, nessie.ExportCSV)
 	if err != nil {
 		panic(err)
 	}

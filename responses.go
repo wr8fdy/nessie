@@ -89,10 +89,11 @@ type ScanDetailsResp struct {
 		HasKB         bool   `json:"haskb"`
 		UUID          string `json:"uuid"`
 		HostCount     int64  `json:"hostcount"`
-		ScanEnd       int64  `json:"scan_end"`
-		Name          string `json:"name"`
-		UserPerms     int64  `json:"user_permissions"`
-		Control       bool   `json:"control"`
+		// TODO: why does this flip between string/int64?
+		// ScanEnd       int64  `json:"scan_end"`
+		Name      string `json:"name"`
+		UserPerms int64  `json:"user_permissions"`
+		Control   bool   `json:"control"`
 	} `json:"info"`
 	Hosts        []Host `json:"hosts"`
 	CompHosts    []Host `json:"comphosts"`
