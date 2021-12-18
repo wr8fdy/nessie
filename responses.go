@@ -89,7 +89,7 @@ type ScanDetailsResp struct {
 		HasKB         bool   `json:"haskb"`
 		UUID          string `json:"uuid"`
 		HostCount     int64  `json:"hostcount"`
-		ScanEnd       string `json:"scan_end"`
+		ScanEnd       int64  `json:"scan_end"`
 		Name          string `json:"name"`
 		UserPerms     int64  `json:"user_permissions"`
 		Control       bool   `json:"control"`

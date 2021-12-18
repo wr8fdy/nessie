@@ -76,7 +76,7 @@ type Nessus interface {
 	EditFolder(folderID int64, newName string) error
 	DeleteFolder(folderID int64) error
 
-	ExportScan(scanID int64, format string) (int64, error)
+	ExportScan(scanID, templateID int64, format string) (int64, error)
 	ExportFinished(scanID, exportID int64) (bool, error)
 	DownloadExport(scanID, exportID int64) ([]byte, error)
 
@@ -927,12 +927,12 @@ const (
 
 // ExportScan exports a scan to a File resource.
 // Call ExportStatus to get the status of the export and call Download() to download the actual file.
-func (n *nessusImpl) ExportScan(scanID int64, format string) (int64, error) {
+func (n *nessusImpl) ExportScan(scanID, templateID int64, format string) (int64, error) {
 	if n.verbose {
 		log.Println("Exporting scan...")
 	}
 
-	req := exportScanRequest{Format: format}
+	req := exportScanRequest{Format: format, TemplateID: templateID}
 	resp, err := n.Request("POST", fmt.Sprintf("/scans/%d/export", scanID), req, []int{http.StatusOK})
 	if err != nil {
 		return 0, err
