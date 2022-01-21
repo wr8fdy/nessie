@@ -95,9 +95,10 @@ type ScanDetailsResp struct {
 		UserPerms int64  `json:"user_permissions"`
 		Control   bool   `json:"control"`
 	} `json:"info"`
-	Hosts        []Host `json:"hosts"`
-	CompHosts    []Host `json:"comphosts"`
-	Notes        []Note `json:"notes"`
+	Hosts     []Host `json:"hosts"`
+	CompHosts []Host `json:"comphosts"`
+	// TODO: this does not always return the same data!
+	// Notes        []Note `json:"notes"`
 	Remediations struct {
 		Remediation Remediation `json:"remediation"`
 	} `json:"remediations"`
