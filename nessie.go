@@ -830,6 +830,9 @@ func (n *nessusImpl) ScanDetails(scanID int64) (*ScanDetailsResp, error) {
 	}
 	defer resp.Body.Close()
 	reply := &ScanDetailsResp{}
+	if n.verbose {
+		log.Printf("Response body: %s", resp.Body)
+	}
 	if err = json.NewDecoder(resp.Body).Decode(&reply); err != nil {
 		return nil, err
 	}
