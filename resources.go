@@ -220,11 +220,11 @@ type Host struct {
 	Score                 int64  `json:"score"`
 }
 
-type Note struct {
-	Title    string `json:"title"`
-	Message  string `json:"message"`
-	Severity int64  `json:"severity"`
-}
+// type Note struct {
+// 	Title    string `json:"title"`
+// 	Message  string `json:"message"`
+// 	Severity int64  `json:"severity"`
+// }
 
 type Remediation struct {
 	Value       string `json:"value"`
