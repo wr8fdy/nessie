@@ -3,11 +3,12 @@ package main
 
 import (
 	"flag"
-	"github.com/JerusJ/nessie"
-	"io/ioutil"
 	"log"
+	"os"
 	"strings"
 	"time"
+
+	"github.com/wr8fdy/nessie"
 )
 
 var apiURL, username, password, fingerprints string
@@ -76,7 +77,7 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-	if err := ioutil.WriteFile("report.csv", csv, 0600); err != nil {
+	if err := os.WriteFile("report.csv", csv, 0600); err != nil {
 		panic(err)
 	}
 }

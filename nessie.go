@@ -10,7 +10,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"log"
 	"mime/multipart"
 	"net"
@@ -76,7 +75,7 @@ type Nessus interface {
 	EditFolder(folderID int64, newName string) error
 	DeleteFolder(folderID int64) error
 
-	ExportScan(scanID, templateID int64, format string) (int64, error)
+	ExportScan(scanID, historyID int64, format string) (int64, error)
 	ExportFinished(scanID, exportID int64) (bool, error)
 	DownloadExport(scanID, exportID int64) ([]byte, error)
 
@@ -152,7 +151,7 @@ func newNessus(
 	}
 	if len(caCertPath) != 0 {
 		roots = x509.NewCertPool()
-		rootPEM, err := ioutil.ReadFile(caCertPath)
+		rootPEM, err := os.ReadFile(caCertPath)
 		if err != nil {
 			return nil, err
 		}
@@ -160,7 +159,7 @@ func newNessus(
 		if !ok {
 			return nil, fmt.Errorf("could not append certs from PEM %s", caCertPath)
 		}
-	} else if verifyCertFingerprint == true {
+	} else if verifyCertFingerprint {
 		if len(certFingerprints) == 0 {
 			return nil, fmt.Errorf("fingerprint verification enabled, fingerprint must not be empty")
 		}
@@ -246,7 +245,7 @@ func (n *nessusImpl) Request(method string, resource string, js interface{}, wan
 	// split resource to:
 	//   1. Path = "/agents"
 	//   2. RawQuery = "filter.0.filter=status&filter.0.quality=neq&filter.0.value=online"
-	if idx := strings.IndexByte(resource, '?'); -1 != idx {
+	if idx := strings.IndexByte(resource, '?'); idx != -1 {
 		u.Path = resource[:idx]
 		u.RawQuery = resource[idx+1:]
 	} else {
@@ -299,11 +298,11 @@ func (n *nessusImpl) Request(method string, resource string, js interface{}, wan
 		}
 	}
 	if !statusFound {
-		body, err := ioutil.ReadAll(resp.Body)
+		body, err := io.ReadAll(resp.Body)
 		if err != nil {
 			return nil, err
 		}
-		return nil, fmt.Errorf("Unexpected status code, got %d wanted %v (%s)", resp.StatusCode, wantStatus, body)
+		return nil, fmt.Errorf("unexpected status code, got %d wanted %v (%s)", resp.StatusCode, wantStatus, body)
 	}
 	return resp, nil
 }
@@ -930,17 +929,23 @@ const (
 
 // ExportScan exports a scan to a File resource.
 // Call ExportStatus to get the status of the export and call Download() to download the actual file.
-func (n *nessusImpl) ExportScan(scanID, templateID int64, format string) (int64, error) {
+func (n *nessusImpl) ExportScan(scanID, historyID int64, format string) (int64, error) {
 	if n.verbose {
 		log.Println("Exporting scan...")
 	}
 
-	req := exportScanRequest{Format: format, TemplateID: templateID}
-	resp, err := n.Request("POST", fmt.Sprintf("/scans/%d/export", scanID), req, []int{http.StatusOK})
+	req := exportScanRequest{Format: format}
+	url := fmt.Sprintf("/scans/%d/export", scanID)
+	if historyID > -1 {
+		url = fmt.Sprintf("%s?history_id=%d", url, historyID)
+	}
+
+	resp, err := n.Request("POST", url, req, []int{http.StatusOK})
 	if err != nil {
 		return 0, err
 	}
 	defer resp.Body.Close()
+
 	reply := &exportScanResp{}
 	if err = json.NewDecoder(resp.Body).Decode(&reply); err != nil {
 		return 0, err
@@ -976,7 +981,7 @@ func (n *nessusImpl) DownloadExport(scanID, exportID int64) ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
-	body, err := ioutil.ReadAll(resp.Body)
+	body, err := io.ReadAll(resp.Body)
 	defer resp.Body.Close()
 	if err != nil {
 		return nil, err
@@ -1097,6 +1102,9 @@ func (n *nessusImpl) Upload(filePath string) error {
 		return err
 	}
 	_, err = io.Copy(part, f)
+	if err != nil {
+		return err
+	}
 
 	if err = writer.Close(); nil != err {
 		return err
@@ -1110,6 +1118,10 @@ func (n *nessusImpl) Upload(filePath string) error {
 	urlStr := fmt.Sprintf("%v", u)
 
 	req, err := http.NewRequest(http.MethodPost, urlStr, body)
+	if err != nil {
+		return err
+	}
+
 	req.Header.Set("Content-Type", writer.FormDataContentType())
 
 	req.Header.Add("Accept", "application/json")
@@ -1133,7 +1145,7 @@ func (n *nessusImpl) Upload(filePath string) error {
 	// Duplicate updates will get different replies
 	// request:             CIS_CentOS_7_Server_L1_v3.0.0.audit
 	// reply: {FileUploaded:CIS_CentOS_7_Server_L1_v3.0.0-6.audit}
-	if 0 == len(reply.FileUploaded) {
+	if len(reply.FileUploaded) == 0 {
 		return fmt.Errorf("Upload failed, api reply: %+v", reply)
 	}
 

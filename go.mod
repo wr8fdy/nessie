@@ -1,4 +1,4 @@
-module github.com/JerusJ/nessie
+module github.com/wr8fdy/nessie
 
 go 1.17
 

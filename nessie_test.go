@@ -166,7 +166,7 @@ func TestMethods(t *testing.T) {
 		{nil, http.StatusOK, func(n Nessus) { n.CreateFolder("name") }},
 		{nil, http.StatusOK, func(n Nessus) { n.EditFolder(42, "newname") }},
 		{nil, http.StatusOK, func(n Nessus) { n.DeleteFolder(42) }},
-		{42, http.StatusOK, func(n Nessus) { n.ExportScan(42, ExportPDF) }},
+		{42, http.StatusOK, func(n Nessus) { n.ExportScan(42, -1, ExportPDF) }},
 		{true, http.StatusOK, func(n Nessus) { n.ExportFinished(42, 43) }},
 		{[]byte("raw export"), http.StatusOK, func(n Nessus) { n.DownloadExport(42, 43) }},
 		{[]Permission{}, http.StatusOK, func(n Nessus) { n.Permissions("scanner", 42) }},

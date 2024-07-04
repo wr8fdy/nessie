@@ -60,8 +60,7 @@ type editFolderRequest struct {
 }
 
 type exportScanRequest struct {
-	Format     string `json:"format"`
-	TemplateID int64  `json:"template_id"`
+	Format string `json:"format"`
 }
 
 type createGroupRequest struct {
