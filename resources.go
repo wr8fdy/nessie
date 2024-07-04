@@ -172,7 +172,7 @@ type Scan struct {
 	UUID                      string      `json:"uuid"`
 	Name                      string      `json:"name"`
 	Owner                     string      `json:"owner"`
-	Shared                    int         `json:"shared"`
+	Shared                    bool        `json:"shared"`
 	UserPermissions           int64       `json:"user_permissions"`
 	CreationDate              int64       `json:"creation_date"`
 	LastModificationDate      int64       `json:"last_modification_date"`
@@ -188,7 +188,7 @@ type Scan struct {
 	AttachedReportMaximumSize int         `json:"attached_report_maximum_size"`
 	AttachedReportType        interface{} `json:"attached_report_type"`
 	Sms                       interface{} `json:"sms"`
-	Enabled                   int         `json:"enabled"`
+	Enabled                   bool        `json:"enabled"`
 	UseDashboard              int         `json:"use_dashboard"`
 	DashboardFile             interface{} `json:"dashboard_file"`
 	LiveResults               int         `json:"live_results"`
