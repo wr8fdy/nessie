@@ -75,9 +75,9 @@ type Nessus interface {
 	EditFolder(folderID int64, newName string) error
 	DeleteFolder(folderID int64) error
 
-	ExportScan(scanID, historyID int64, format string) (int64, error)
-	ExportFinished(scanID, exportID int64) (bool, error)
-	DownloadExport(scanID, exportID int64) ([]byte, error)
+	ExportScan(scanID, historyID int64, format string) (string, error)
+	ExportFinished(scanID int64, exportID string) (bool, error)
+	DownloadExport(scanID int64, exportID string) ([]byte, error)
 
 	Permissions(objectType string, objectID int64) ([]Permission, error)
 }
@@ -929,7 +929,7 @@ const (
 
 // ExportScan exports a scan to a File resource.
 // Call ExportStatus to get the status of the export and call Download() to download the actual file.
-func (n *nessusImpl) ExportScan(scanID, historyID int64, format string) (int64, error) {
+func (n *nessusImpl) ExportScan(scanID, historyID int64, format string) (string, error) {
 	if n.verbose {
 		log.Println("Exporting scan...")
 	}
@@ -942,24 +942,24 @@ func (n *nessusImpl) ExportScan(scanID, historyID int64, format string) (int64, 
 
 	resp, err := n.Request("POST", url, req, []int{http.StatusOK})
 	if err != nil {
-		return 0, err
+		return "", err
 	}
 	defer resp.Body.Close()
 
 	reply := &exportScanResp{}
 	if err = json.NewDecoder(resp.Body).Decode(&reply); err != nil {
-		return 0, err
+		return "", err
 	}
 	return reply.File, nil
 }
 
 // ExportFinished returns whether the given scan export file has finished being prepared.
-func (n *nessusImpl) ExportFinished(scanID, exportID int64) (bool, error) {
+func (n *nessusImpl) ExportFinished(scanID int64, exportID string) (bool, error) {
 	if n.verbose {
 		log.Println("Getting export status...")
 	}
 
-	resp, err := n.Request("GET", fmt.Sprintf("/scans/%d/export/%d/status", scanID, exportID), nil, []int{http.StatusOK})
+	resp, err := n.Request("GET", fmt.Sprintf("/scans/%d/export/%s/status", scanID, exportID), nil, []int{http.StatusOK})
 	if err != nil {
 		return false, err
 	}
@@ -972,12 +972,12 @@ func (n *nessusImpl) ExportFinished(scanID, exportID int64) (bool, error) {
 }
 
 // DownloadExport will download the given export from nessus.
-func (n *nessusImpl) DownloadExport(scanID, exportID int64) ([]byte, error) {
+func (n *nessusImpl) DownloadExport(scanID int64, exportID string) ([]byte, error) {
 	if n.verbose {
 		log.Println("Downloading export file...")
 	}
 
-	resp, err := n.Request("GET", fmt.Sprintf("/scans/%d/export/%d/download", scanID, exportID), nil, []int{http.StatusOK})
+	resp, err := n.Request("GET", fmt.Sprintf("/scans/%d/export/%s/download", scanID, exportID), nil, []int{http.StatusOK})
 	if err != nil {
 		return nil, err
 	}

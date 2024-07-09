@@ -121,7 +121,7 @@ type listFoldersResp struct {
 }
 
 type exportScanResp struct {
-	File int64 `json:"file"`
+	File string `json:"file"`
 }
 
 type exportStatusResp struct {
